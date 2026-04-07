@@ -245,8 +245,6 @@ export default function DayOnePage() {
           leaderboardRef,
           {
             uid: user.uid,
-            name: user.displayName ?? "Anonymous",
-            photoURL: user.photoURL ?? "",
             totalPoints: nextTotalPoints,
             dayPoints: nextDayPoints,
             lastUpdatedAt: serverTimestamp(),
