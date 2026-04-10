@@ -33,18 +33,18 @@ type UserProfile = {
 };
 
 const challengeDays = [
-  { day: 1, date: "Apr 7" },
-  { day: 2, date: "Apr 8" },
-  { day: 3, date: "Apr 9" },
-  { day: 4, date: "Apr 10" },
-  { day: 5, date: "Apr 11" },
-  { day: 6, date: "Apr 12" },
-  { day: 7, date: "Apr 13" },
-  { day: 8, date: "Apr 14" },
-  { day: 9, date: "Apr 15" },
+  { day: 1, date: "Apr 11" },
+  { day: 2, date: "Apr 12" },
+  { day: 3, date: "Apr 13" },
+  { day: 4, date: "Apr 14" },
+  { day: 5, date: "Apr 15" },
+  { day: 6, date: "Apr 16" },
+  { day: 7, date: "Apr 17" },
+  { day: 8, date: "Apr 18" },
+  { day: 9, date: "Apr 19" },
 ];
 
-const CHALLENGE_START_DATE_UTC = new Date("2026-04-07T00:00:00Z");
+const CHALLENGE_START_DATE_UTC = new Date("2026-04-10T00:00:00Z");
 const CHALLENGE_TOTAL_DAYS = challengeDays.length;
 
 export default function DashboardPage() {
