@@ -324,6 +324,7 @@ export default function DayOnePage() {
         await batch.commit();
 
         setSubmitted(true);
+        router.replace("/leaderboard");
       } catch (error) {
         console.error("Failed to submit Day 1 challenge", error);
         alert("Submission failed. Please try again.");
@@ -331,7 +332,7 @@ export default function DayOnePage() {
         setSubmitting(false);
       }
     },
-    [answers, oddSelections, submitted, submitting, user]
+    [answers, oddSelections, router, submitted, submitting, user]
   );
 
   useEffect(() => {

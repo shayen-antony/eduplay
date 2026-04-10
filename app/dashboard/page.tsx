@@ -400,7 +400,13 @@ export default function DashboardPage() {
                   </button>
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-3 space-y-1 text-xs text-white/70">
+                <p className="font-medium text-white">{displayName}</p>
+                <p>{displayEmail}</p>
+                <p>College: {displayCollege || "Not added. Click avatar to edit."}</p>
+              </div>
+            )}
           </section>
 
           <section className="mx-auto mt-6 grid w-full max-w-6xl gap-6 lg:mt-8 lg:grid-cols-[1fr_320px]">
