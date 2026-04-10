@@ -44,7 +44,7 @@ const challengeDays = [
   { day: 9, date: "Apr 19" },
 ];
 
-const CHALLENGE_START_DATE_IST = new Date("2026-04-10T21:00:00+05:30");
+const CHALLENGE_START_DATE_IST = new Date("2026-04-11T00:00:00+05:30");
 const CHALLENGE_TOTAL_DAYS = challengeDays.length;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -419,29 +419,36 @@ export default function DashboardPage() {
                       ? "Challenge window closed"
                       : `${challengeState.statusText} ${countdownText}`}
                   </p>
-                  <button
-                    type="button"
-                    disabled={challengeState.phase !== "active"}
-                    onClick={() =>
-                      challengeState.phase === "active" &&
-                      router.push(`/dashboard/day-${challengeState.currentDay}`)
-                    }
-                    className={`mt-3 w-full rounded-xl border p-3 text-center transition ${
-                      challengeState.phase === "active"
-                        ? "border-[#f47a20] bg-[#121212] hover:bg-[#171717]"
-                        : "cursor-not-allowed border-white/15 bg-[#101010] opacity-70"
-                    }`}
-                  >
-                    <p className="text-sm text-white/75">Day {challengeState.currentDay}</p>
-                    <p className="mt-0.5 text-xs text-white/45">{challengeDays[challengeState.currentDay - 1]?.date}</p>
-                    <p className="mt-2 text-sm font-semibold text-[#f47a20]">
-                      {challengeState.phase === "active"
-                        ? `Play Day ${challengeState.currentDay}`
-                        : challengeState.phase === "prestart"
-                          ? "Unlocks at 9:00 PM IST"
-                          : "Challenge Closed"}
-                    </p>
-                  </button>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {challengeDays.map(item => {
+                      const canPlay = challengeState.phase === "active" && item.day <= challengeState.currentDay;
+                      return (
+                        <button
+                          key={item.day}
+                          type="button"
+                          disabled={!canPlay}
+                          onClick={() => canPlay && router.push(`/dashboard/day-${item.day}`)}
+                          className={`rounded-lg border p-2 text-center transition ${
+                            canPlay
+                              ? item.day === challengeState.currentDay
+                                ? "border-[#f47a20] bg-[#1a140f]"
+                                : "border-[#f47a20]/60 bg-[#121212]"
+                              : "cursor-not-allowed border-white/15 bg-[#101010] opacity-70"
+                          }`}
+                        >
+                          <p className="text-xs text-white/75">Day {item.day}</p>
+                          <p className="mt-0.5 text-[10px] text-white/45">{item.date}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-[#f47a20]">
+                    {challengeState.phase === "active"
+                      ? `Play days 1-${challengeState.currentDay}`
+                      : challengeState.phase === "prestart"
+                        ? "Unlocks at 12:00 AM IST"
+                        : "Challenge Closed"}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -495,7 +502,7 @@ export default function DashboardPage() {
                       {challengeState.phase === "active"
                         ? `Play Day ${challengeState.currentDay}`
                         : challengeState.phase === "prestart"
-                          ? "Unlocks at 9:00 PM IST"
+                          ? "Unlocks at 12:00 AM IST"
                           : "Challenge Closed"}
                     </p>
                   </button>
@@ -506,15 +513,17 @@ export default function DashboardPage() {
                     <button
                       key={item.day}
                       type="button"
-                      disabled={challengeState.phase !== "active" || item.day !== challengeState.currentDay}
+                      disabled={challengeState.phase !== "active" || item.day > challengeState.currentDay}
                       onClick={() =>
                         challengeState.phase === "active" &&
-                        item.day === challengeState.currentDay &&
+                        item.day <= challengeState.currentDay &&
                         router.push(`/dashboard/day-${item.day}`)
                       }
                       className={`rounded-xl border p-4 text-left transition ${
-                        challengeState.phase === "active" && item.day === challengeState.currentDay
-                          ? "border-[#f47a20] bg-[#1a140f] hover:bg-[#231911]"
+                        challengeState.phase === "active" && item.day <= challengeState.currentDay
+                          ? item.day === challengeState.currentDay
+                            ? "border-[#f47a20] bg-[#1a140f] hover:bg-[#231911]"
+                            : "border-[#f47a20]/70 bg-[#121212] hover:bg-[#171717]"
                           : "cursor-not-allowed border-white/15 bg-[#101010] opacity-55"
                       }`}
                     >

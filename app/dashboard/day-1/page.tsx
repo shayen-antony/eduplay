@@ -31,8 +31,10 @@ type OddOneLevel = {
 };
 
 const QUIZ_TIME_SECONDS = 8 * 60;
-const DAY_ONE_START_IST = new Date("2026-04-10T21:00:00+05:30").getTime();
-const DAY_ONE_END_IST = DAY_ONE_START_IST + 24 * 60 * 60 * 1000;
+const DAY_ONE_START_IST = new Date("2026-04-11T00:00:00+05:30").getTime();
+const CHALLENGE_START_IST = DAY_ONE_START_IST;
+const CHALLENGE_TOTAL_DAYS = 9;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const questions: Question[] = [
   {
@@ -259,7 +261,14 @@ export default function DayOnePage() {
         const remainingSeconds = Math.max(QUIZ_TIME_SECONDS - elapsedSeconds, 0);
         const timeBonusPerCorrect = Math.floor(remainingSeconds / totalQuestionCount);
         const timeBonusPoints = totalCorrectCount * timeBonusPerCorrect;
-        const totalPoints = basePoints + timeBonusPoints;
+        const rawTotalPoints = basePoints + timeBonusPoints;
+
+        const nowForPenalty = Date.now();
+        const elapsedDaysFromStart = Math.floor((nowForPenalty - CHALLENGE_START_IST) / DAY_MS);
+        const currentChallengeDay = Math.min(Math.max(elapsedDaysFromStart + 1, 1), CHALLENGE_TOTAL_DAYS);
+        const daysLate = Math.max(currentChallengeDay - 1, 0);
+        const latePenaltyMultiplier = Math.max(1 - daysLate * 0.1, 0.1);
+        const totalPoints = Math.round(rawTotalPoints * latePenaltyMultiplier);
 
         const userRef = doc(db, "users", user.uid);
         const leaderboardRef = doc(db, "leaderboard", user.uid);
@@ -296,6 +305,9 @@ export default function DayOnePage() {
             totalQuestionCount,
             timeBonusPerCorrect,
             timeBonusPoints,
+            rawTotalPoints,
+            daysLate,
+            latePenaltyMultiplier,
             totalPoints,
             elapsedSeconds,
             quizTimeLimitSeconds: QUIZ_TIME_SECONDS,
@@ -397,24 +409,6 @@ export default function DayOnePage() {
           <h1 className="text-2xl font-semibold text-[#f47a20]">Day 1 Locked</h1>
           <p className="mt-3 text-sm text-white/70">Day 1 unlocks in</p>
           <p className="mt-1 text-lg font-semibold text-white">{formatCountdown(DAY_ONE_START_IST - nowMs)}</p>
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            className="mt-5 rounded-full border border-white/20 px-5 py-2 text-sm"
-          >
-            Back to Dashboard
-          </button>
-        </section>
-      </div>
-    );
-  }
-
-  if (nowMs >= DAY_ONE_END_IST) {
-    return renderPage(
-      <div className="flex min-h-[70vh] items-center justify-center text-white">
-        <section className="w-full max-w-2xl rounded-2xl border border-[#f47a20]/35 bg-[#0b0b0b] p-6 text-center">
-          <h1 className="text-2xl font-semibold text-[#f47a20]">Day 1 Closed</h1>
-          <p className="mt-3 text-sm text-white/70">Day 1 could only be played during its 24-hour window.</p>
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
