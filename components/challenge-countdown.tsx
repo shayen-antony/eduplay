@@ -126,7 +126,7 @@ export default function ChallengeCountdown() {
           <CounterUnit label="Secs" value={units.seconds} />
         </div>
         <p className="mt-3 text-xs text-[#b4bac7] sm:text-sm">
-          Each day is playable only during its own 00:00 to 23:59 IST window.
+          Top 5 players on the leaderboard at the end of the challenge will win exclusive prizes!
         </p>
       </div>
     </div>
