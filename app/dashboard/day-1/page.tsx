@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import {
@@ -11,6 +11,8 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import DotGrid from "@/components/DotGrid";
+import ShapeGrid from "@/components/ShapeGrid";
 
 type Question = {
   id: number;
@@ -29,6 +31,8 @@ type OddOneLevel = {
 };
 
 const QUIZ_TIME_SECONDS = 8 * 60;
+const DAY_ONE_START_IST = new Date("2026-04-11T00:00:00+05:30").getTime();
+const DAY_ONE_END_IST = DAY_ONE_START_IST + 24 * 60 * 60 * 1000;
 
 const questions: Question[] = [
   {
@@ -173,6 +177,7 @@ export default function DayOnePage() {
   const [timeLeft, setTimeLeft] = useState(QUIZ_TIME_SECONDS);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const startRef = useRef<number | null>(null);
 
@@ -201,6 +206,11 @@ export default function DayOnePage() {
 
     return () => window.clearInterval(intervalId);
   }, [ready, submitted, timeLeft]);
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timerId);
+  }, []);
 
   const handleSubmit = useCallback(
     async (autoSubmitted: boolean) => {
@@ -318,11 +328,82 @@ export default function DayOnePage() {
     void handleSubmit(true);
   }, [handleSubmit, ready, submitted, timeLeft]);
 
+  const renderPage = (content: ReactNode) => (
+    <div className="min-h-screen bg-black text-white">
+      <div className="relative isolate min-h-screen overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10 h-full w-full sm:hidden">
+          <ShapeGrid
+            direction="diagonal"
+            speed={0.25}
+            borderColor="#2b2b2b"
+            squareSize={34}
+            hoverFillColor="#141414"
+            shape="square"
+            hoverTrailAmount={0}
+            className="h-full w-full"
+          />
+        </div>
+        <div className="pointer-events-auto absolute inset-0 -z-10 hidden h-full w-full sm:block">
+          <DotGrid
+            dotSize={3}
+            gap={30}
+            baseColor="#2a2a2a"
+            activeColor="#f47a20"
+            className="h-full w-full"
+            style={{}}
+          />
+        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-36 left-1/2 h-[520px] w-[780px] -translate-x-1/2 rounded-full border border-[#f47a20]/30 blur-3xl -z-5 bg-[#f47a20]/5"
+        />
+        <main className="relative z-10 min-h-screen px-5 py-8 sm:px-8 lg:px-12">{content}</main>
+      </div>
+    </div>
+  );
+
   if (!ready) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-black text-white">
+    return renderPage(
+      <div className="flex min-h-[70vh] items-center justify-center text-white">
         <p className="text-sm text-white/70">Loading Day 1 challenge...</p>
-      </main>
+      </div>
+    );
+  }
+
+  if (nowMs < DAY_ONE_START_IST) {
+    return renderPage(
+      <div className="flex min-h-[70vh] items-center justify-center text-white">
+        <section className="w-full max-w-2xl rounded-2xl border border-[#f47a20]/35 bg-[#0b0b0b] p-6 text-center">
+          <h1 className="text-2xl font-semibold text-[#f47a20]">Day 1 Locked</h1>
+          <p className="mt-3 text-sm text-white/70">Day 1 unlocks in</p>
+          <p className="mt-1 text-lg font-semibold text-white">{formatCountdown(DAY_ONE_START_IST - nowMs)}</p>
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard")}
+            className="mt-5 rounded-full border border-white/20 px-5 py-2 text-sm"
+          >
+            Back to Dashboard
+          </button>
+        </section>
+      </div>
+    );
+  }
+
+  if (nowMs >= DAY_ONE_END_IST) {
+    return renderPage(
+      <div className="flex min-h-[70vh] items-center justify-center text-white">
+        <section className="w-full max-w-2xl rounded-2xl border border-[#f47a20]/35 bg-[#0b0b0b] p-6 text-center">
+          <h1 className="text-2xl font-semibold text-[#f47a20]">Day 1 Closed</h1>
+          <p className="mt-3 text-sm text-white/70">Day 1 could only be played during its 24-hour window.</p>
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard")}
+            className="mt-5 rounded-full border border-white/20 px-5 py-2 text-sm"
+          >
+            Back to Dashboard
+          </button>
+        </section>
+      </div>
     );
   }
 
@@ -353,9 +434,8 @@ export default function DayOnePage() {
           ? "text-amber-300 border-amber-400/40 bg-amber-400/10"
           : "text-rose-300 border-rose-400/40 bg-rose-400/10";
 
-  return (
-    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-12">
-      <section className="mx-auto w-full max-w-4xl space-y-5">
+  return renderPage(
+    <section className="mx-auto w-full max-w-4xl space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-semibold text-[#f47a20]">Day 1 Challenge</h1>
@@ -558,7 +638,20 @@ export default function DayOnePage() {
             </button>
           ) : null}
         </div>
-      </section>
-    </main>
+    </section>
   );
+}
+
+function formatCountdown(ms: number) {
+  const totalSeconds = Math.max(Math.floor(ms / 1000), 0);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (days > 0) {
+    return `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+  }
+
+  return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
 }
